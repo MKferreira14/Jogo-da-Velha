@@ -88,7 +88,7 @@ export default function Campo() {
     novoTabuleiro[i] = "X";
 
     setQuadrados(novoTabuleiro);
-    setJogadorDaVez("X");
+    
 
     const resultado = calcularVencedor(novoTabuleiro);
     setStatus(resultado);
@@ -96,9 +96,11 @@ export default function Campo() {
     if (resultado === null) {
       setJogadorDaVez("O");
     }
-    setTimeout(() => {
-    jogadaMaquina(novoTabuleiro);
-  }, 500);
+    
+
+  if (resultado === null) {
+  setJogadorDaVez("X");
+}
 
     const jogada =
       `Jogada ${local.length + 1}: X na posição ${i}`;
