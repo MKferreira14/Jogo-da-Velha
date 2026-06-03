@@ -1,122 +1,147 @@
-import { useState } from 'react';  
-import { BotaoReiniciar } from './Reiniciar';
+import { useState } from "react";
+import { BotaoReiniciar } from "./Reiniciar";
 
-
-function Square({valor, func}) {
-  return <button className="square" onClick={func}>{valor}</button>
+function Square({ valor, func }) {
+  return (
+    <button className="square" onClick={func}>
+      {valor}
+    </button>
+  );
 }
 
 export default function Campo() {
   const [quadrados, setQuadrados] = useState(Array(9).fill(null));
-  const [estado, setEstado] = useState(false);
   const [status, setStatus] = useState(null);
   const [local, setLocal] = useState([]);
-  
 
-  function calcularVencedor(quadradosTemp) {
-    if ((quadradosTemp[0]=="X" && quadradosTemp[1]=="X" && quadradosTemp[2]=="X")
-      || (quadradosTemp[3]=="X" && quadradosTemp[4]=="X" && quadradosTemp[5]=="X")
-      || (quadradosTemp[6]=="X" && quadradosTemp[7]=="X" && quadradosTemp[8]=="X")
-      // acrescentado diagonias
-      || (quadradosTemp[6]=="X" && quadradosTemp[4]=="X" && quadradosTemp[2]=="X")
-      || (quadradosTemp[0]=="X" && quadradosTemp[4]=="X" && quadradosTemp[8]=="X")
-      // acrescentando colunas
-      || (quadradosTemp[0]=="X" && quadradosTemp[3]=="X" && quadradosTemp[6]=="X")
-      || (quadradosTemp[1]=="X" && quadradosTemp[4]=="X" && quadradosTemp[7]=="X")
-      || (quadradosTemp[2]=="X" && quadradosTemp[5]=="X" && quadradosTemp[8]=="X")
-    ) {
-      console.log("Jogador 1 Venceu!");
-      return "Jogador 1 venceu!";
-    } else if ((quadradosTemp[0]=="O" && quadradosTemp[1]=="O" && quadradosTemp[2]=="O")
-      || (quadradosTemp[3]=="O" && quadradosTemp[4]=="O" && quadradosTemp[5]=="O")
-      || (quadradosTemp[6]=="O" && quadradosTemp[7]=="O" && quadradosTemp[8]=="O")
-      // acrescentado diagonias
-      || (quadradosTemp[6]=="O" && quadradosTemp[4]=="O" && quadradosTemp[2]=="O")
-      || (quadradosTemp[0]=="O" && quadradosTemp[4]=="O" && quadradosTemp[8]=="O")
-      // acrescentando colunas
-      || (quadradosTemp[0]=="O" && quadradosTemp[3]=="O" && quadradosTemp[6]=="O")
-      || (quadradosTemp[1]=="O" && quadradosTemp[4]=="O" && quadradosTemp[7]=="O")
-      || (quadradosTemp[2]=="O" && quadradosTemp[5]=="O" && quadradosTemp[8]=="O")
-    ) {
-        console.log("Jogador 2 Venceu!");
-        return "Jogador 2 venceu!";
-    } else if (
-      quadradosTemp[0]!=null && 
-      quadradosTemp[1]!=null && 
-      quadradosTemp[2]!=null && 
-      quadradosTemp[3]!=null && 
-      quadradosTemp[4]!=null && 
-      quadradosTemp[5]!=null && 
-      quadradosTemp[6]!=null && 
-quadradosTemp[7]!=null && 
-quadradosTemp[8]!=null
-    ) {
-      console.log("Deu empate!");
+  function calcularVencedor(tabuleiro) {
+    const linhas = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    for (let linha of linhas) {
+      const [a, b, c] = linha;
+
+      if (
+        tabuleiro[a] &&
+        tabuleiro[a] === tabuleiro[b] &&
+        tabuleiro[a] === tabuleiro[c]
+      ) {
+        return tabuleiro[a] === "X"
+          ? "Jogador venceu!"
+          : "Máquina venceu!";
+      }
+    }
+
+    if (tabuleiro.every((quadrado) => quadrado !== null)) {
       return "Deu empate!";
     }
+
     return null;
   }
 
-  function handleClick(i) {
-    const quadradoTemp = quadrados.slice();
-  
-    if (quadradoTemp[i] != null || status != null) {
-      return;
+  function jogadaMaquina(tabuleiroAtual) {
+    if (calcularVencedor(tabuleiroAtual)) return;
+
+    const livres = [];
+
+    for (let i = 0; i < tabuleiroAtual.length; i++) {
+      if (tabuleiroAtual[i] === null) {
+        livres.push(i);
+      }
     }
 
-    if (quadradoTemp[i]!=null) {
-      return;
-    }
+    if (livres.length === 0) return;
 
-    if (estado==false) {
-      quadradoTemp[i] = "X";
-    } else {
-      quadradoTemp[i] = "O";
-    }
-       
-    //definindo quem está jogando
-    let jogadorAtual;
-    if (estado == false) {
-    jogadorAtual = "X";
-    } else {
-    jogadorAtual = "O";
-    }
+    const posicao =
+      livres[Math.floor(Math.random() * livres.length)];
 
-    setQuadrados(quadradoTemp);
-    setEstado(!estado);
-    setStatus(calcularVencedor(quadradoTemp));
-   
-    //fazendo texto da jogada
-    const Jogada = `Jogada ${local.length + 1}: ${jogadorAtual} na posição ${i}`;
-   
-    setLocal([...local, Jogada]);
+    const novoTabuleiro = [...tabuleiroAtual];
+    novoTabuleiro[posicao] = "O";
 
+    setQuadrados(novoTabuleiro);
+
+    const resultado = calcularVencedor(novoTabuleiro);
+    setStatus(resultado);
+
+    const jogada =
+      `Jogada ${local.length + 2}: O na posição ${posicao}`;
+
+    setLocal((prev) => [...prev, jogada]);
   }
-  return <>
-    <div class="board-row">
-      <Square valor={quadrados[0]} func={() =>handleClick(0)} />
-      <Square valor={quadrados[1]} func={() =>handleClick(1)}/>
-      <Square valor={quadrados[2]} func={() =>handleClick(2)}/>
-    </div>
-    <div class="board-row">
-      <Square valor={quadrados[3]} func={() =>handleClick(3)}/>
-      <Square valor={quadrados[4]} func={() =>handleClick(4)}/>
-      <Square valor={quadrados[5]} func={() =>handleClick(5)}/>
-    </div>
-    <div class="board-row">
-      <Square valor={quadrados[6]} func={() =>handleClick(6)}/>
-      <Square valor={quadrados[7]} func={() =>handleClick(7)}/>
-      <Square valor={quadrados[8]} func={() =>handleClick(8)}/>  
-    </div>
-    <div><h1>{status}</h1></div>
-    <div className="local-container">
-      <h3>Histórico de Jogadas:</h3>
-      <ul>
-        {local.map((jogada, indice) => (
-          <li key={indice}>{jogada}</li>
-        ))}
-      </ul>
-    </div>
-    <BotaoReiniciar setQuadrados={setQuadrados} setEstado={setEstado} setStatus={setStatus} setLocal={setLocal}/>
-  </>;
+
+  function handleClick(i) {
+    if (status !== null) return;
+
+    const novoTabuleiro = [...quadrados];
+
+    if (novoTabuleiro[i] !== null) return;
+
+    novoTabuleiro[i] = "X";
+
+    setQuadrados(novoTabuleiro);
+
+    const resultado = calcularVencedor(novoTabuleiro);
+    setStatus(resultado);
+
+    const jogada =
+      `Jogada ${local.length + 1}: X na posição ${i}`;
+
+    setLocal((prev) => [...prev, jogada]);
+
+    if (resultado === null) {
+      setTimeout(() => {
+        jogadaMaquina(novoTabuleiro);
+      }, 500);
+    }
+  }
+
+  return (
+    <>
+      <div className="board-row">
+        <Square valor={quadrados[0]} func={() => handleClick(0)} />
+        <Square valor={quadrados[1]} func={() => handleClick(1)} />
+        <Square valor={quadrados[2]} func={() => handleClick(2)} />
+      </div>
+
+      <div className="board-row">
+        <Square valor={quadrados[3]} func={() => handleClick(3)} />
+        <Square valor={quadrados[4]} func={() => handleClick(4)} />
+        <Square valor={quadrados[5]} func={() => handleClick(5)} />
+      </div>
+
+      <div className="board-row">
+        <Square valor={quadrados[6]} func={() => handleClick(6)} />
+        <Square valor={quadrados[7]} func={() => handleClick(7)} />
+        <Square valor={quadrados[8]} func={() => handleClick(8)} />
+      </div>
+
+      <div>
+        <h1>{status}</h1>
+      </div>
+
+      <div className="local-container">
+        <h3>Histórico de Jogadas</h3>
+
+        <ul>
+          {local.map((jogada, indice) => (
+            <li key={indice}>{jogada}</li>
+          ))}
+        </ul>
+      </div>
+
+      <BotaoReiniciar
+        setQuadrados={setQuadrados}
+        setStatus={setStatus}
+        setLocal={setLocal}
+      />
+    </>
+  );
 }
