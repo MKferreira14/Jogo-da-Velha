@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { BotaoReiniciar } from "./Reiniciar";
 
-function Square({ valor, func }) {
+function Square({ valor, func, vencedor }) {
   return (
-    <button className="square" onClick={func}>
+    <button className={`square ${vencedor ? "vencedor" : ""}`} onClick={func}>
       {valor}
     </button>
   );
@@ -14,6 +14,7 @@ export default function Campo() {
   const [status, setStatus] = useState(null);
   const [local, setLocal] = useState([]);
   const [jogadorDaVez, setJogadorDaVez] = useState("X");
+  const [linhaVencedora, setLinhaVencedora] = useState([]);
 
   function calcularVencedor(tabuleiro) {
     const linhas = [
@@ -34,7 +35,9 @@ export default function Campo() {
         tabuleiro[a] &&
         tabuleiro[a] === tabuleiro[b] &&
         tabuleiro[a] === tabuleiro[c]
-      ) {
+      ) { 
+        setLinhaVencedora(linha);
+
         return tabuleiro[a] === "X"
           ? "Jogador venceu!"
           : "Máquina venceu!";
@@ -127,21 +130,57 @@ export default function Campo() {
      </div>
 
       <div className="board-row">
-        <Square valor={quadrados[0]} func={() => handleClick(0)} />
-        <Square valor={quadrados[1]} func={() => handleClick(1)} />
-        <Square valor={quadrados[2]} func={() => handleClick(2)} />
+        <Square
+  valor={quadrados[0]}
+  func={() => handleClick(0)}
+  vencedor={linhaVencedora.includes(0)}
+/>
+        <Square
+  valor={quadrados[1]}
+  func={() => handleClick(1)}
+  vencedor={linhaVencedora.includes(1)}
+/>
+        <Square
+  valor={quadrados[2]}
+  func={() => handleClick(2)}
+  vencedor={linhaVencedora.includes(2)}
+/>
       </div>
 
       <div className="board-row">
-        <Square valor={quadrados[3]} func={() => handleClick(3)} />
-        <Square valor={quadrados[4]} func={() => handleClick(4)} />
-        <Square valor={quadrados[5]} func={() => handleClick(5)} />
+        <Square
+  valor={quadrados[3]}
+  func={() => handleClick(3)}
+  vencedor={linhaVencedora.includes(3)}
+/>
+        <Square
+  valor={quadrados[4]}
+  func={() => handleClick(4)}
+  vencedor={linhaVencedora.includes(4)}
+/>
+        <Square
+  valor={quadrados[5]}
+  func={() => handleClick(5)}
+  vencedor={linhaVencedora.includes(5)}
+/>
       </div>
 
       <div className="board-row">
-        <Square valor={quadrados[6]} func={() => handleClick(6)} />
-        <Square valor={quadrados[7]} func={() => handleClick(7)} />
-        <Square valor={quadrados[8]} func={() => handleClick(8)} />
+        <Square
+  valor={quadrados[6]}
+  func={() => handleClick(6)}
+  vencedor={linhaVencedora.includes(6)}
+/>
+        <Square
+  valor={quadrados[7]}
+  func={() => handleClick(7)}
+  vencedor={linhaVencedora.includes(7)}
+/>
+        <Square
+  valor={quadrados[8]}
+  func={() => handleClick(8)}
+  vencedor={linhaVencedora.includes(8)}
+/>
       </div>
 
       <div>
@@ -162,6 +201,7 @@ export default function Campo() {
         setQuadrados={setQuadrados}
         setStatus={setStatus}
         setLocal={setLocal}
+        setLinhaVencedora={setLinhaVencedora}
       />
     </>
   );

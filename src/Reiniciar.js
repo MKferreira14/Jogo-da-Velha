@@ -1,9 +1,10 @@
-export function BotaoReiniciar({ setQuadrados, setStatus, setLocal }) {
+export function BotaoReiniciar({ setQuadrados, setStatus, setLocal, setLinhaVencedora }) {
 
   function reiniciarJogo() {
     setQuadrados(Array(9).fill(null));
     setStatus(null);
     setLocal([]);
+    setLinhaVencedora([]);
   }
 
   return (
