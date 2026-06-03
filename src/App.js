@@ -98,14 +98,16 @@ export default function Campo() {
     }
     
 
-  if (resultado === null) {
-  setJogadorDaVez("X");
-}
+  
 
     const jogada =
       `Jogada ${local.length + 1}: X na posição ${i}`;
 
     setLocal((prev) => [...prev, jogada]);
+
+    if (resultado === null) {
+  setJogadorDaVez("X");
+}
 
     if (resultado === null) {
       setTimeout(() => {
