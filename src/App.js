@@ -76,6 +76,10 @@ export default function Campo() {
       `Jogada ${local.length + 2}: O na posição ${posicao}`;
 
     setLocal((prev) => [...prev, jogada]);
+
+    if (resultado === null) {
+  setJogadorDaVez("X");
+}
   }
 
   function handleClick(i) {
@@ -105,9 +109,8 @@ export default function Campo() {
 
     setLocal((prev) => [...prev, jogada]);
 
-    if (resultado === null) {
-  setJogadorDaVez("X");
-}
+    
+
 
     if (resultado === null) {
       setTimeout(() => {
