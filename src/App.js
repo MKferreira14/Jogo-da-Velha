@@ -16,46 +16,41 @@ export default function Campo() {
   const [jogadorDaVez, setJogadorDaVez] = useState("X");
   const [linhaVencedora, setLinhaVencedora] = useState([]);
 
+  // CORREÇÃO: A função agora é pura. Ela apenas calcula e retorna os dados, sem atualizar estados.
   function calcularVencedor(tabuleiro) {
     const linhas = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
+      [0, 4, 8], [2, 4, 6]             // Diagonais
     ];
 
     for (let linha of linhas) {
       const [a, b, c] = linha;
-
       if (
         tabuleiro[a] &&
         tabuleiro[a] === tabuleiro[b] &&
         tabuleiro[a] === tabuleiro[c]
       ) { 
-        setLinhaVencedora(linha);
-
-        return tabuleiro[a] === "X"
-          ? "Jogador venceu!"
-          : "Máquina venceu!";
+        return {
+          resultado: tabuleiro[a] === "X" ? "Jogador venceu!" : "Máquina venceu!",
+          linha: linha
+        };
       }
     }
 
     if (tabuleiro.every((quadrado) => quadrado !== null)) {
-      return "Deu empate!";
+      return { resultado: "Deu empate!", linha: [] };
     }
 
     return null;
   }
 
   function jogadaMaquina(tabuleiroAtual) {
-    if (calcularVencedor(tabuleiroAtual)) return;
+    // 🔒 BLOQUEIO MÁQUINA: Se o jogador ganhou na última jogada, a máquina não joga.
+    const checagemImediata = calcularVencedor(tabuleiroAtual);
+    if (checagemImediata) return;
 
     const livres = [];
-
     for (let i = 0; i < tabuleiroAtual.length; i++) {
       if (tabuleiroAtual[i] === null) {
         livres.push(i);
@@ -64,58 +59,44 @@ export default function Campo() {
 
     if (livres.length === 0) return;
 
-    const posicao =
-      livres[Math.floor(Math.random() * livres.length)];
-
+    const posicao = livres[Math.floor(Math.random() * livres.length)];
     const novoTabuleiro = [...tabuleiroAtual];
     novoTabuleiro[posicao] = "O";
 
     setQuadrados(novoTabuleiro);
 
-    const resultado = calcularVencedor(novoTabuleiro);
-    setStatus(resultado);
+    // Atualiza o resultado após a jogada da máquina
+    const infoVencedor = calcularVencedor(novoTabuleiro);
+    if (infoVencedor) {
+      setStatus(infoVencedor.resultado);
+      setLinhaVencedora(infoVencedor.linha);
+    } else {
+      setJogadorDaVez("X");
+    }
 
-    const jogada =
-      `Jogada ${local.length + 2}: O na posição ${posicao}`;
-
+    const jogada = `Jogada ${local.length + 2}: O na posição ${posicao}`;
     setLocal((prev) => [...prev, jogada]);
-
-    if (resultado === null) {
-  setJogadorDaVez("X");
-}
   }
 
   function handleClick(i) {
-    if (status !== null) return;
+    // 🔒 BLOQUEIO JOGADOR: Se o jogo acabou ou o quadrado está ocupado, impede a jogada
+    if (status !== null || quadrados[i] !== null) return;
 
     const novoTabuleiro = [...quadrados];
-
-    if (novoTabuleiro[i] !== null) return;
-
     novoTabuleiro[i] = "X";
-
     setQuadrados(novoTabuleiro);
-    
 
-    const resultado = calcularVencedor(novoTabuleiro);
-    setStatus(resultado);
-
-    if (resultado === null) {
-      setJogadorDaVez("O");
-    }
-    
-
-  
-
-    const jogada =
-      `Jogada ${local.length + 1}: X na posição ${i}`;
-
+    const jogada = `Jogada ${local.length + 1}: X na posição ${i}`;
     setLocal((prev) => [...prev, jogada]);
 
-    
+    const infoVencedor = calcularVencedor(novoTabuleiro);
 
-
-    if (resultado === null) {
+    if (infoVencedor) {
+      setStatus(infoVencedor.resultado);
+      setLinhaVencedora(infoVencedor.linha);
+    } else {
+      setJogadorDaVez("O");
+      // Só agenda a jogada da máquina se o jogo continuar ativo
       setTimeout(() => {
         jogadaMaquina(novoTabuleiro);
       }, 500);
@@ -124,63 +105,27 @@ export default function Campo() {
 
   return (
     <>
-     <div className="jogador-da-vez">
-     <span>Vez do jogador</span>
-     <h2>{jogadorDaVez}</h2>
-     </div>
-
-      <div className="board-row">
-        <Square
-  valor={quadrados[0]}
-  func={() => handleClick(0)}
-  vencedor={linhaVencedora.includes(0)}
-/>
-        <Square
-  valor={quadrados[1]}
-  func={() => handleClick(1)}
-  vencedor={linhaVencedora.includes(1)}
-/>
-        <Square
-  valor={quadrados[2]}
-  func={() => handleClick(2)}
-  vencedor={linhaVencedora.includes(2)}
-/>
+      <div className="jogador-da-vez">
+        <span>Vez do jogador</span>
+        <h2>{jogadorDaVez}</h2>
       </div>
 
       <div className="board-row">
-        <Square
-  valor={quadrados[3]}
-  func={() => handleClick(3)}
-  vencedor={linhaVencedora.includes(3)}
-/>
-        <Square
-  valor={quadrados[4]}
-  func={() => handleClick(4)}
-  vencedor={linhaVencedora.includes(4)}
-/>
-        <Square
-  valor={quadrados[5]}
-  func={() => handleClick(5)}
-  vencedor={linhaVencedora.includes(5)}
-/>
+        <Square valor={quadrados[0]} func={() => handleClick(0)} vencedor={linhaVencedora.includes(0)} />
+        <Square valor={quadrados[1]} func={() => handleClick(1)} vencedor={linhaVencedora.includes(1)} />
+        <Square valor={quadrados[2]} func={() => handleClick(2)} vencedor={linhaVencedora.includes(2)} />
       </div>
 
       <div className="board-row">
-        <Square
-  valor={quadrados[6]}
-  func={() => handleClick(6)}
-  vencedor={linhaVencedora.includes(6)}
-/>
-        <Square
-  valor={quadrados[7]}
-  func={() => handleClick(7)}
-  vencedor={linhaVencedora.includes(7)}
-/>
-        <Square
-  valor={quadrados[8]}
-  func={() => handleClick(8)}
-  vencedor={linhaVencedora.includes(8)}
-/>
+        <Square valor={quadrados[3]} func={() => handleClick(3)} vencedor={linhaVencedora.includes(3)} />
+        <Square valor={quadrados[4]} func={() => handleClick(4)} vencedor={linhaVencedora.includes(4)} />
+        <Square valor={quadrados[5]} func={() => handleClick(5)} vencedor={linhaVencedora.includes(5)} />
+      </div>
+
+      <div className="board-row">
+        <Square valor={quadrados[6]} func={() => handleClick(6)} vencedor={linhaVencedora.includes(6)} />
+        <Square valor={quadrados[7]} func={() => handleClick(7)} vencedor={linhaVencedora.includes(7)} />
+        <Square valor={quadrados[8]} func={() => handleClick(8)} vencedor={linhaVencedora.includes(8)} />
       </div>
 
       <div>
@@ -189,7 +134,6 @@ export default function Campo() {
 
       <div className="local-container">
         <h3>Histórico de Jogadas</h3>
-
         <ul>
           {local.map((jogada, indice) => (
             <li key={indice}>{jogada}</li>
