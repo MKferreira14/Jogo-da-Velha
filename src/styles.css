@@ -44,3 +44,34 @@ button {
 .local-container {
   margin-top: 20px;
 }
+
+.jogador-da-vez {
+  width: 250px;
+  margin: 20px auto;
+  padding: 15px;
+
+  background: #1e1e1e;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+
+  text-align: center;
+
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.jogador-da-vez span {
+  display: block;
+  font-size: 14px;
+  color: #d1d1d1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.jogador-da-vez h2 {
+  margin-top: 8px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #00d4ff;
+
+  font-family: "Segoe UI", sans-serif;
+}

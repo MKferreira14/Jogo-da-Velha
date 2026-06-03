@@ -13,6 +13,7 @@ export default function Campo() {
   const [quadrados, setQuadrados] = useState(Array(9).fill(null));
   const [status, setStatus] = useState(null);
   const [local, setLocal] = useState([]);
+  const [jogadorDaVez, setJogadorDaVez] = useState("X");
 
   function calcularVencedor(tabuleiro) {
     const linhas = [
@@ -87,9 +88,17 @@ export default function Campo() {
     novoTabuleiro[i] = "X";
 
     setQuadrados(novoTabuleiro);
+    setJogadorDaVez("X");
 
     const resultado = calcularVencedor(novoTabuleiro);
     setStatus(resultado);
+
+    if (resultado === null) {
+      setJogadorDaVez("O");
+    }
+    setTimeout(() => {
+    jogadaMaquina(novoTabuleiro);
+  }, 500);
 
     const jogada =
       `Jogada ${local.length + 1}: X na posição ${i}`;
@@ -105,6 +114,11 @@ export default function Campo() {
 
   return (
     <>
+     <div className="jogador-da-vez">
+     <span>Vez do jogador</span>
+     <h2>{jogadorDaVez}</h2>
+     </div>
+
       <div className="board-row">
         <Square valor={quadrados[0]} func={() => handleClick(0)} />
         <Square valor={quadrados[1]} func={() => handleClick(1)} />
