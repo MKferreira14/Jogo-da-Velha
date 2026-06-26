@@ -15,6 +15,9 @@ export default function Campo() {
   const [local, setLocal] = useState([]);
   const [jogadorDaVez, setJogadorDaVez] = useState("X");
   const [linhaVencedora, setLinhaVencedora] = useState([]);
+  const [vitoriasx, setVitoriasx] = useState(0);
+  const [vitoriaso, setVitoriaso] = useState(0);
+  const [empates, setEmpates] = useState(0);
 
   // CORREÇÃO: A função agora é pura. Ela apenas calcula e retorna os dados, sem atualizar estados.
   function calcularVencedor(tabuleiro) {
@@ -31,6 +34,10 @@ export default function Campo() {
         tabuleiro[a] === tabuleiro[b] &&
         tabuleiro[a] === tabuleiro[c]
       ) { 
+        if( tabuleiro[a] ==="X"){
+          setVitoriasx( vitoriasx+1);
+        }
+        else{setVitoriaso( vitoriaso+1);}
         return {
           resultado: tabuleiro[a] === "X" ? "Jogador venceu!" : "Máquina venceu!",
           linha: linha
@@ -39,6 +46,7 @@ export default function Campo() {
     }
 
     if (tabuleiro.every((quadrado) => quadrado !== null)) {
+      setEmpates(empates+1);
       return { resultado: "Deu empate!", linha: [] };
     }
 
@@ -147,6 +155,11 @@ export default function Campo() {
         setLocal={setLocal}
         setLinhaVencedora={setLinhaVencedora}
       />
+      <div>
+        <p>vitorias de x: {vitoriasx}</p>
+                <p>vitorias de o: {vitoriaso}</p>
+                        <p>empates: {empates}</p>
+      </div>
     </>
   );
 }
