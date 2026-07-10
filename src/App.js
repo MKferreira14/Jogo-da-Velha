@@ -39,8 +39,8 @@ export default function Campo() {
         setCarregando(true);
 
         const [respostaX, respostaO] = await Promise.all([
-          fetch("https://pokeapi.co/api/v2/pokemon/sylveon"),
-          fetch("https://pokeapi.co/api/v2/pokemon/alcremie"),
+          fetch("https://pokeapi.co/api/v2/pokemon/gengar"),
+          fetch("https://pokeapi.co/api/v2/pokemon/charmander"),
         ]);
 
         const dadosX = await respostaX.json();
