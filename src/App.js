@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BotaoReiniciar } from "./Reiniciar";
 
-function Square({ valor, func, vencedor }) {
+function Square({ valor, func, vencedor, pokemon }) {
   return (
     <button className={`square ${vencedor ? "vencedor" : ""}`} onClick={func}>
-      {valor}
+      {valor && pokemon && (
+        <img
+          src={pokemon.sprite}
+          alt={pokemon.nome}
+          className="pokemon-sprite"
+        />
+      )}
     </button>
   );
 }
@@ -19,7 +25,53 @@ export default function Campo() {
   const [vitoriaso, setVitoriaso] = useState(0);
   const [empates, setEmpates] = useState(0);
 
-  // CORREÇÃO: A função agora é pura. Ela apenas calcula e retorna os dados, sem atualizar estados.
+  // Pokémon dos jogadores
+  const [pokemonX, setPokemonX] = useState(null);
+  const [pokemonO, setPokemonO] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
+  // Requisito 1: carregar os dois Pokémon automaticamente ao iniciar,
+  // usando useEffect com lista de dependências vazia ([])
+  useEffect(() => {
+    async function carregarPokemons() {
+      try {
+        setCarregando(true);
+
+        const [respostaX, respostaO] = await Promise.all([
+          fetch("https://pokeapi.co/api/v2/pokemon/gengar"),
+          fetch("https://pokeapi.co/api/v2/pokemon/charmander"),
+        ]);
+
+        const dadosX = await respostaX.json();
+        const dadosO = await respostaO.json();
+
+        setPokemonX({
+          nome: dadosX.name,
+          sprite: dadosX.sprites.front_default,
+        });
+
+        setPokemonO({
+          nome: dadosO.name,
+          sprite: dadosO.sprites.front_default,
+        });
+      } catch (err) {
+        setErro("Não foi possível carregar os Pokémon. Tente novamente.");
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarPokemons();
+  }, []);
+
+  // Mapeia o símbolo interno ("X" ou "O") para o objeto do Pokémon correspondente
+  function pokemonDoSimbolo(simbolo) {
+    if (simbolo === "X") return pokemonX;
+    if (simbolo === "O") return pokemonO;
+    return null;
+  }
+
   function calcularVencedor(tabuleiro) {
     const linhas = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
@@ -33,20 +85,24 @@ export default function Campo() {
         tabuleiro[a] &&
         tabuleiro[a] === tabuleiro[b] &&
         tabuleiro[a] === tabuleiro[c]
-      ) { 
-        if( tabuleiro[a] ==="X"){
-          setVitoriasx( vitoriasx+1);
+      ) {
+        if (tabuleiro[a] === "X") {
+          setVitoriasx((v) => v + 1);
+        } else {
+          setVitoriaso((v) => v + 1);
         }
-        else{setVitoriaso( vitoriaso+1);}
         return {
-          resultado: tabuleiro[a] === "X" ? "Jogador venceu!" : "Máquina venceu!",
+          resultado:
+            tabuleiro[a] === "X"
+              ? `${pokemonX?.nome ?? "Jogador"} venceu!`
+              : `${pokemonO?.nome ?? "Máquina"} venceu!`,
           linha: linha
         };
       }
     }
 
     if (tabuleiro.every((quadrado) => quadrado !== null)) {
-      setEmpates(empates+1);
+      setEmpates((e) => e + 1);
       return { resultado: "Deu empate!", linha: [] };
     }
 
@@ -54,7 +110,6 @@ export default function Campo() {
   }
 
   function jogadaMaquina(tabuleiroAtual) {
-    // 🔒 BLOQUEIO MÁQUINA: Se o jogador ganhou na última jogada, a máquina não joga.
     const checagemImediata = calcularVencedor(tabuleiroAtual);
     if (checagemImediata) return;
 
@@ -73,7 +128,6 @@ export default function Campo() {
 
     setQuadrados(novoTabuleiro);
 
-    // Atualiza o resultado após a jogada da máquina
     const infoVencedor = calcularVencedor(novoTabuleiro);
     if (infoVencedor) {
       setStatus(infoVencedor.resultado);
@@ -82,19 +136,18 @@ export default function Campo() {
       setJogadorDaVez("X");
     }
 
-    const jogada = `Jogada ${local.length + 2}: O na posição ${posicao}`;
+    const jogada = `Jogada ${local.length + 2}: ${pokemonO?.nome ?? "O"} na posição ${posicao}`;
     setLocal((prev) => [...prev, jogada]);
   }
 
   function handleClick(i) {
-    // 🔒 BLOQUEIO JOGADOR: Se o jogo acabou ou o quadrado está ocupado, impede a jogada
-    if (status !== null || quadrados[i] !== null) return;
+    if (status !== null || quadrados[i] !== null || carregando) return;
 
     const novoTabuleiro = [...quadrados];
     novoTabuleiro[i] = "X";
     setQuadrados(novoTabuleiro);
 
-    const jogada = `Jogada ${local.length + 1}: X na posição ${i}`;
+    const jogada = `Jogada ${local.length + 1}: ${pokemonX?.nome ?? "X"} na posição ${i}`;
     setLocal((prev) => [...prev, jogada]);
 
     const infoVencedor = calcularVencedor(novoTabuleiro);
@@ -104,18 +157,48 @@ export default function Campo() {
       setLinhaVencedora(infoVencedor.linha);
     } else {
       setJogadorDaVez("O");
-      // Só agenda a jogada da máquina se o jogo continuar ativo
       setTimeout(() => {
         jogadaMaquina(novoTabuleiro);
       }, 500);
     }
   }
 
+  // Renderização condicional enquanto os Pokémon são carregados
+  if (carregando) {
+    return (
+      <div className="carregando">
+        <h2>Carregando Pokémon...</h2>
+      </div>
+    );
+  }
+
+  if (erro) {
+    return (
+      <div className="carregando">
+        <h2>{erro}</h2>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="jogador-da-vez">
-        <span>Vez do jogador</span>
-        <h2>{jogadorDaVez}</h2>
+      <div className="jogadores-info">
+        <div className={`cartao-jogador ${jogadorDaVez === "X" ? "ativo" : ""}`}>
+          <img src={pokemonX?.sprite} alt={pokemonX?.nome} />
+          <p>{pokemonX?.nome}</p>
+          <span>vitórias: {vitoriasx}</span>
+        </div>
+
+        <div className="jogador-da-vez">
+          <span>Vez do jogador</span>
+          <h2>{jogadorDaVez === "X" ? pokemonX?.nome : pokemonO?.nome}</h2>
+        </div>
+
+        <div className={`cartao-jogador ${jogadorDaVez === "O" ? "ativo" : ""}`}>
+          <img src={pokemonO?.sprite} alt={pokemonO?.nome} />
+          <p>{pokemonO?.nome}</p>
+          <span>vitórias: {vitoriaso}</span>
+        </div>
       </div>
 
       <div className="container-principal">
@@ -128,21 +211,39 @@ export default function Campo() {
 
        <div className="tabuleiro-centro">
       <div className="board-row">
-        <Square valor={quadrados[0]} func={() => handleClick(0)} vencedor={linhaVencedora.includes(0)} />
-        <Square valor={quadrados[1]} func={() => handleClick(1)} vencedor={linhaVencedora.includes(1)} />
-        <Square valor={quadrados[2]} func={() => handleClick(2)} vencedor={linhaVencedora.includes(2)} />
+        {[0, 1, 2].map((i) => (
+          <Square
+            key={i}
+            valor={quadrados[i]}
+            func={() => handleClick(i)}
+            vencedor={linhaVencedora.includes(i)}
+            pokemon={pokemonDoSimbolo(quadrados[i])}
+          />
+        ))}
       </div>
 
       <div className="board-row">
-        <Square valor={quadrados[3]} func={() => handleClick(3)} vencedor={linhaVencedora.includes(3)} />
-        <Square valor={quadrados[4]} func={() => handleClick(4)} vencedor={linhaVencedora.includes(4)} />
-        <Square valor={quadrados[5]} func={() => handleClick(5)} vencedor={linhaVencedora.includes(5)} />
+        {[3, 4, 5].map((i) => (
+          <Square
+            key={i}
+            valor={quadrados[i]}
+            func={() => handleClick(i)}
+            vencedor={linhaVencedora.includes(i)}
+            pokemon={pokemonDoSimbolo(quadrados[i])}
+          />
+        ))}
       </div>
 
       <div className="board-row">
-        <Square valor={quadrados[6]} func={() => handleClick(6)} vencedor={linhaVencedora.includes(6)} />
-        <Square valor={quadrados[7]} func={() => handleClick(7)} vencedor={linhaVencedora.includes(7)} />
-        <Square valor={quadrados[8]} func={() => handleClick(8)} vencedor={linhaVencedora.includes(8)} />
+        {[6, 7, 8].map((i) => (
+          <Square
+            key={i}
+            valor={quadrados[i]}
+            func={() => handleClick(i)}
+            vencedor={linhaVencedora.includes(i)}
+            pokemon={pokemonDoSimbolo(quadrados[i])}
+          />
+        ))}
       </div>
       </div>
 
@@ -171,11 +272,11 @@ export default function Campo() {
         setStatus={setStatus}
         setLocal={setLocal}
         setLinhaVencedora={setLinhaVencedora}
+        setJogadorDaVez={setJogadorDaVez}
       />
+
       <div>
-        <p>vitorias de x: {vitoriasx}</p>
-                <p>vitorias de o: {vitoriaso}</p>
-                        <p>empates: {empates}</p>
+        <p>empates: {empates}</p>
       </div>
     </>
   );

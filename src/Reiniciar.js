@@ -1,17 +1,21 @@
-export function BotaoReiniciar({ setQuadrados, setStatus, setLocal, setLinhaVencedora }) {
-
-  function reiniciarJogo() {
+export function BotaoReiniciar({
+  setQuadrados,
+  setStatus,
+  setLocal,
+  setLinhaVencedora,
+  setJogadorDaVez,
+}) {
+  function reiniciar() {
     setQuadrados(Array(9).fill(null));
     setStatus(null);
     setLocal([]);
     setLinhaVencedora([]);
+    setJogadorDaVez("X");
   }
 
   return (
-    <div>
-      <button onClick={reiniciarJogo}>
-        Reiniciar
-      </button>
-    </div>
+    <button className="botao-reiniciar" onClick={reiniciar}>
+      Reiniciar partida
+    </button>
   );
 }
