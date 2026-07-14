@@ -24,6 +24,8 @@ export default function Campo() {
   const [vitoriasx, setVitoriasx] = useState(0);
   const [vitoriaso, setVitoriaso] = useState(0);
   const [empates, setEmpates] = useState(0);
+  const [buscaX, setBuscaX] = useState("");
+  const [buscaO, setBuscaO] = useState("");
 
   // Pokémon dos jogadores
   const [pokemonX, setPokemonX] = useState(null);
@@ -64,6 +66,34 @@ export default function Campo() {
 
     carregarPokemons();
   }, []);
+    
+  //Função para a requisição da API pela busca no painel jogador
+    async function buscarPokemon(nome, tipoJogador) {
+    if (!nome.trim()) return;
+
+    try {
+      const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${nome.toLowerCase().trim()}`);
+      
+      if (!resposta.ok) {
+        alert("Pokémon não encontrado! Verifique o nome.");
+        return;
+      }
+
+      const dados = await resposta.json();
+      const novoPokemon = {
+        nome: dados.name,
+        sprite: dados.sprites.front_default,
+      };
+
+      if (tipoJogador === "X") {
+        setPokemonX(novoPokemon);
+      } else {
+        setPokemonO(novoPokemon);
+      }
+    } catch (err) {
+      alert("Erro ao buscar o Pokémon. Tente novamente.");
+    }
+  }
 
   // Mapeia o símbolo interno ("X" ou "O") para o objeto do Pokémon correspondente
   function pokemonDoSimbolo(simbolo) {
@@ -204,10 +234,11 @@ export default function Campo() {
       <div className="container-principal">
 
         <div className="painel-jogador">
-    <h3>Jogador 1</h3>
-    <input type="text" placeholder="Nome do Pokemon" className="input-jogador" />
-    <button className="botao-busca">Buscar</button>
-       </div>
+        <h3>Jogador 1</h3>
+        <input type="text" placeholder="Nome do Pokemon" className="input-jogador" value={buscaX}
+    onChange={(e) => setBuscaX(e.target.value)}/>
+        <button className="botao-busca" onClick={() => buscarPokemon(buscaX, "X")}>Buscar</button>
+      </div>
 
        <div className="tabuleiro-centro">
       <div className="board-row">
@@ -248,10 +279,11 @@ export default function Campo() {
       </div>
 
       <div className="painel-jogador">
-      <h3>Jogador 2</h3>
-      <input type="text" placeholder="Nome do Jogador 2" className="input-jogador" />
-      <button className="botao-busca">Buscar</button>
-       </div>
+        <h3>Jogador 2</h3>
+        <input type="text" placeholder="Nome do jogador 2" className="input-jogador" value={buscaO}
+        onChange={(e) => setBuscaO(e.target.value)}/>
+        <button className="botao-busca" onClick={() => buscarPokemon(buscaO, "O")}>Buscar</button>
+      </div>
       </div>
 
       <div>
