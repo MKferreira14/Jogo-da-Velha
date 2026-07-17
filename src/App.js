@@ -26,6 +26,7 @@ export default function Campo() {
   const [empates, setEmpates] = useState(0);
   const [buscaX, setBuscaX] = useState("");
   const [buscaO, setBuscaO] = useState("");
+  const [mensagemPokemon, setMensagemPokemon] = useState("");
 
   // Pokémon dos jogadores
   const [pokemonX, setPokemonX] = useState(null);
@@ -70,6 +71,18 @@ export default function Campo() {
   //Função para a requisição da API pela busca no painel jogador
     async function buscarPokemon(nome, tipoJogador) {
     if (!nome.trim()) return;
+    function mostrarMensagem(texto) {
+  setMensagemPokemon(texto);
+  if (!resposta.ok) {
+  mostrarMensagem("Pokémon não encontrado.");
+  alert("Pokémon não encontrado! Verifique o nome.");
+  return;
+}
+
+  setTimeout(() => {
+    setMensagemPokemon("");
+  }, 3000);
+}
 
     try {
       const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${nome.toLowerCase().trim()}`);
@@ -232,12 +245,19 @@ export default function Campo() {
       </div>
 
       <div className="container-principal">
+        {mensagemPokemon && (
+  <div className="mensagem-erro">
+    {mensagemPokemon}
+  </div>
+)}
 
         <div className="painel-jogador">
         <h3>Jogador 1</h3>
         <input type="text" placeholder="Nome do Pokemon" className="input-jogador" value={buscaX}
     onChange={(e) => setBuscaX(e.target.value)}/>
         <button className="botao-busca" onClick={() => buscarPokemon(buscaX, "X")}>Buscar</button>
+        
+        
       </div>
 
        <div className="tabuleiro-centro">
@@ -283,6 +303,7 @@ export default function Campo() {
         <input type="text" placeholder="Nome do jogador 2" className="input-jogador" value={buscaO}
         onChange={(e) => setBuscaO(e.target.value)}/>
         <button className="botao-busca" onClick={() => buscarPokemon(buscaO, "O")}>Buscar</button>
+        
       </div>
       </div>
 
